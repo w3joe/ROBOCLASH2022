@@ -1,0 +1,208 @@
+#include <Servo.h>
+
+// Include iBusBM Library
+#include <IBusBM.h>
+ 
+// Create iBus Object
+IBusBM ibus;
+
+#define RMotorPin1 50
+#define RMotorPin2 52
+#define RMotorSpeed 2
+
+#define LMotorPin1 51
+#define LMotorPin2 53
+#define LMotorSpeed 3
+
+Servo servo_arm ,servo_arm_2, servo_claw;
+
+
+
+ 
+// Read the number of a given channel and convert to the range provided.
+// If the channel is off, return the default value
+int readChannel(byte channelInput, int minLimit, int maxLimit, int defaultValue) {
+  uint16_t ch = ibus.readChannel(channelInput);
+  if (ch < 100) return defaultValue;
+  return map(ch, 1000, 2000, minLimit, maxLimit);
+}
+ 
+// Read the channel and return a boolean value
+bool readSwitch(byte channelInput, bool defaultValue) {
+  int intDefaultValue = (defaultValue) ? 100 : 0;
+  int ch = readChannel(channelInput, 0, 100, intDefaultValue);
+  return (ch > 50);
+}
+
+
+ 
+void setup() {
+
+
+  
+  // Start serial monitor
+  Serial.begin(115200);
+ 
+  // Attach iBus object to serial port
+  ibus.begin(Serial1);
+
+  pinMode(RMotorPin1, OUTPUT);
+  pinMode(RMotorPin2, OUTPUT);
+  pinMode(RMotorSpeed, OUTPUT);
+  pinMode(LMotorPin1, OUTPUT);
+  pinMode(LMotorPin2, OUTPUT);
+  pinMode(LMotorSpeed, OUTPUT);
+
+  servo_arm.attach(5,530,2600);
+  servo_arm_2.attach(6,530,2600);
+  servo_claw.attach(9,530,2600);
+}
+ 
+void loop() {
+ 
+  // Cycle through first 5 channels and determine values
+  // Print values to serial monitor
+  // Note IBusBM library labels channels starting with "0"
+
+  //Right Stick, Left/Right
+  int Ch1value = readChannel(0,-100,100,0);
+
+  //Right Stick, Up/Down
+  int Ch2value = readChannel(1,-100,100,0);
+
+  int Ch3value = readChannel(2,-100,100,0);
+  int Ch4value = readChannel(3,-100,100,0);
+  
+ 
+  if(Ch1value == 0 && Ch2value > 0){
+  int forward_Speed =  Ch2value * 3.64285714;
+  //Forward
+  digitalWrite(RMotorPin1, LOW);
+  digitalWrite(RMotorPin2, HIGH);
+  analogWrite(RMotorSpeed, forward_Speed);
+  digitalWrite(LMotorPin1, LOW);
+  digitalWrite(LMotorPin2, HIGH);
+  analogWrite(LMotorSpeed, forward_Speed);
+  //delay(10);
+  
+ }
+ else if(Ch1value > 0 && Ch2value > 0){
+  //forward right
+   int forward_Speed =  Ch2value * 3.64285714;
+   int ch1speed = Ch1value * 3.64285714;
+   double turning_speed = forward_Speed - ch1speed;
+   digitalWrite(RMotorPin1, LOW);
+   digitalWrite(RMotorPin2, HIGH);
+   analogWrite(RMotorSpeed, turning_speed);
+   digitalWrite(LMotorPin1, LOW);
+   digitalWrite(LMotorPin2, HIGH);
+   analogWrite(LMotorSpeed, forward_Speed);
+   //delay(10);
+ }
+ else if(Ch1value < 0 && Ch2value > 0){
+  //forward left
+   int forward_Speed =  Ch2value * 3.64285714;
+   int ch1speed = Ch1value * -3.64285714;
+   double turning_speed = forward_Speed - ch1speed;
+   digitalWrite(RMotorPin1, LOW);
+   digitalWrite(RMotorPin2, HIGH);
+   analogWrite(RMotorSpeed, forward_Speed);
+   digitalWrite(LMotorPin1, LOW);
+   digitalWrite(LMotorPin2, HIGH);
+   analogWrite(LMotorSpeed,turning_speed );
+   delay(10);
+ }
+ else if(Ch1value == 0 && Ch2value < 0){
+  int reverse_Speed =  Ch2value * -3.64285714;
+  //Reverse
+  digitalWrite(RMotorPin1, HIGH  );
+  digitalWrite(RMotorPin2, LOW);
+  analogWrite(RMotorSpeed,  reverse_Speed);
+  digitalWrite(LMotorPin1, HIGH);
+  digitalWrite(LMotorPin2, LOW);
+  analogWrite(LMotorSpeed, reverse_Speed);
+ // delay(10);
+ }
+ else if(Ch1value > 0 && Ch2value < 0){
+  //Reverse right
+  int reverse_Speed =  Ch2value * -3.64285714;
+  int ch1speed = Ch1value * 3.64285714;
+  double turning_speed = reverse_Speed  - ch1speed;
+  digitalWrite(RMotorPin1, HIGH);
+  digitalWrite(RMotorPin2 , LOW);
+  analogWrite(RMotorSpeed, turning_speed);
+  digitalWrite(LMotorPin1, HIGH);
+  digitalWrite(LMotorPin2 , LOW);
+  analogWrite(LMotorSpeed, reverse_Speed);
+  //delay(10);
+ }
+ else if(Ch1value < 0 && Ch2value < 0){
+  //Reverse left
+  int reverse_Speed =  Ch2value * -3.64285714;
+  int ch1speed = Ch1value * -3.64285714;
+  double turning_speed = reverse_Speed  - ch1speed;
+  digitalWrite(RMotorPin1, HIGH);
+  digitalWrite(RMotorPin2 , LOW);
+  analogWrite(RMotorSpeed, reverse_Speed);
+  digitalWrite(LMotorPin1, HIGH);
+  digitalWrite(LMotorPin2 , LOW);
+  analogWrite(LMotorSpeed, turning_speed);
+ // delay(10);
+ }
+ else if(Ch1value < 0 && Ch2value == 0){
+  //turning 
+  int ch1speed = Ch1value * -3.64285714;
+  digitalWrite(RMotorPin1, LOW);
+  digitalWrite(RMotorPin2 , HIGH);
+  analogWrite(RMotorSpeed, ch1speed);
+  digitalWrite(LMotorPin1, HIGH);
+  digitalWrite(LMotorPin2 , LOW);
+  analogWrite(LMotorSpeed, ch1speed);
+ // delay(10);
+ }
+  else if(Ch1value > 0 && Ch2value == 0){
+  //turning 
+  int ch1speed = Ch1value * 3.64285714;
+  digitalWrite(RMotorPin1, HIGH);
+  digitalWrite(RMotorPin2 , LOW);
+  analogWrite(RMotorSpeed, ch1speed);
+  digitalWrite(LMotorPin1, LOW);
+  digitalWrite(LMotorPin2 , HIGH);
+  analogWrite(LMotorSpeed, ch1speed);
+ // delay(10);
+ }
+
+ //servo motor
+  if(Ch3value == 0){ 
+    servo_arm.write( 190 );
+    servo_arm_2.write( 190 );
+    
+  }
+  if(Ch3value > 0){
+    int servo_turn = Ch3value * 1.90; 
+    servo_arm.write( 190 - servo_turn );
+    servo_arm_2.write( 180 - servo_turn );
+    
+  }
+  
+  if(Ch4value > 0){
+    int servo_turn = Ch4value * -0.909090909090; //77 degree
+    servo_claw.write( servo_turn ); 
+   Serial.print(" | Degree: ");
+   Serial.print(servo_turn);
+  }
+ 
+ 
+ 
+ 
+ 
+ 
+
+  Serial.print(" | Ch3: ");
+  Serial.print(Ch1value);
+  Serial.print(" | Ch4: ");
+  Serial.print(Ch2value);
+  delay(10); 
+
+  
+}
