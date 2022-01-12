@@ -1,0 +1,45 @@
+#include <Servo.h>
+
+Servo servo_arm ,servo_arm_2, servo_claw;
+  // Generally, you should use "unsigned long" for variables that hold time
+  // The value will quickly become too large for an int to store
+  unsigned long previousMillis = 0;        // will store last time LED was updated
+  
+  // constants won't change:
+  const long interval = 1000;           // interval at which to blink (milliseconds)
+int x = 0;
+int y=4;
+  
+void setup() {
+  // put your setup code here, to run once:
+
+  // Start serial monitor
+  Serial.begin(115200);
+
+  servo_arm.attach(5,530,2600);
+  servo_arm_2.attach(6,530,2600);
+  servo_claw.attach(9,1286,1812);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+    unsigned long currentMillis = millis();
+
+
+  if (currentMillis - previousMillis >= interval) {
+  // save the last time you blinked the LED
+  previousMillis = currentMillis;
+  // min = 123
+  //max = 72
+  x++;
+  y++;
+  }
+  
+  Serial.print(servo_arm.read());
+  Serial.print(" ");
+  Serial.println(servo_arm_2.read());
+  servo_arm.write(y);
+  servo_arm_2.write(x);
+  //Serial.print(x);
+ 
+}
