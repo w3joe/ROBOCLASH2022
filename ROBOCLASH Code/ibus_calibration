@@ -1,0 +1,74 @@
+/*
+ Arduino FS-I6X Demo
+  fsi6x-arduino-mega-ibus.ino
+  Read iBus output port from FS-IA6B receiver module
+  Display values on Serial Monitor
+ 
+  Channel functions by Ricardo Paiva - https://gist.github.com/werneckpaiva/
+ 
+  DroneBot Workshop 2021
+  https://dronebotworkshop.com
+*/
+ 
+// Include iBusBM Library
+#include <IBusBM.h>
+ 
+// Create iBus Object
+IBusBM ibus;
+ 
+// Read the number of a given channel and convert to the range provided.
+// If the channel is off, return the default value
+int readChannel(byte channelInput, int minLimit, int maxLimit, int defaultValue) {
+  uint16_t ch = ibus.readChannel(channelInput);
+  if (ch < 100) return defaultValue;
+  return map(ch, 1000, 2000, minLimit, maxLimit);
+}
+ 
+// Read the channel and return a boolean value
+bool readSwitch(byte channelInput, bool defaultValue) {
+  int intDefaultValue = (defaultValue) ? 100 : 0;
+  int ch = readChannel(channelInput, 0, 100, intDefaultValue);
+  return (ch > 50);
+}
+ 
+void setup() {
+  // Start serial monitor
+  Serial.begin(115200);
+ 
+  // Attach iBus object to serial port
+  ibus.begin(Serial1);
+}
+ 
+void loop() {
+ 
+  // Cycle through first 5 channels and determine values
+  // Print values to serial monitor
+  // Note IBusBM library labels channels starting with "0"
+
+  //Right Stick, Left/Right
+  int Ch1value  = readChannel(0,-100,100,0);
+  //Right Stick, Up/Down
+  int Ch2value = readChannel(1,-100,100,0);
+ // Left Stick, Up/Down
+  int Ch3value = readChannel(2,-100,100,0);
+  //Left Stick, Left/Right
+  int Ch4value = readChannel(3,-100,100,0);
+ //VRA 
+  int Ch5value =   readChannel(8,-100,100,0);
+//switch 5
+  int Ch6value =   readChannel(4,-100,100,0);
+  
+ 
+  // Print to Serial Monitor
+  
+  
+  Serial.print(" | Ch3: ");
+  Serial.print(Ch3value);
+ 
+  
+  
+
+  delay(10);
+ 
+    
+}
