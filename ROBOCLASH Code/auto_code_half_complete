@@ -2,8 +2,8 @@
 
 #include <Servo.h>
 #include <IBusBM.h>
-#define frontleftpin 4
-#define frontrightpin 5
+#define frontleftpin 12
+#define frontrightpin 13
  
 // Create iBus Object
 IBusBM ibus;
